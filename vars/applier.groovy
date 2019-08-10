@@ -19,14 +19,17 @@ def call(Map input) {
 } 
 
 def call(ApplierInput input) {
-    assert input.inventoryPath?.trim() : "Param inventoryPath should be defined."
+    assert input.ansibleRootDir?.trim() : "Param ansibleRootDir should be defined."
     assert input.requirementsPath?.trim() : "Param requirementsPath should be defined."
-    
+    assert input.rolesPath?.trim() : "Param rolesPath should be defined."
+    assert input.inventoryPath?.trim() : "Param inventoryPath should be defined."
+    assert input.applierPlaybook?.trim() : "Param applierPlaybook should be defined."
+
     // if secretName is given then get cluster token from there
     // else use given clusterToken
     // useful to prevent loading the cluster token from secret over and over again
     // which can be a slow operation but also preserves backward compatibility in this function
-    if(!secretName.allWhitespace) {
+    if(!input.secretName.allWhitespace) {
         openshift.withCluster() {
             def secretData   = openshift.selector("secret/${input.secretName}").object().data
             def encodedToken = secretData.token
@@ -43,10 +46,10 @@ def call(ApplierInput input) {
         script {
             sh """
                 pushd ${input.ansibleRootDir}
-		ansible-galaxy install --role-file=${input.requirementsPath} --roles-path=${input.rolesPath}
-		ansible-playbook -i ${input.inventoryPath} ${input.applierPlaybook} ${input.playbookAdditionalArgs}
+                ansible-galaxy install --role-file=${input.requirementsPath} --roles-path=${input.rolesPath}
+                ansible-playbook -i ${input.inventoryPath} ${input.applierPlaybook} ${input.playbookAdditionalArgs}
             	popd
-	    """
+	        """
         }
     }
 }

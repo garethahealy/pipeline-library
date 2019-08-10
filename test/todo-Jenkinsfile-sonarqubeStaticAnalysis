@@ -1,0 +1,16 @@
+#!groovy
+@Library(["pipeline-library@jenkinsfile-tests"]) _
+
+node("maven") {
+    stage("SETUP: Test") {
+        echo "TODO"
+    }
+
+    stage("TEST: Test") {
+        echo "TODO"
+    }
+
+    stage("ASSERT") {
+        error "TODO: Write test"
+    }
+}

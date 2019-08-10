@@ -1,6 +1,9 @@
 #!/usr/bin/env groovy
 
 class TagImageInput implements Serializable {
+    String clusterUrl = ""
+    String clusterToken = ""
+    String projectName = ""
     String sourceImagePath =  ""
     String sourceImageName = ""
     String sourceImageTag = "latest"
@@ -21,11 +24,16 @@ def call(Map input) {
 
 def call(TagImageInput input) {
     assert input.sourceImageName?.trim() : "Param sourceImageName should be defined."
-    assert input.sourceImagePath?.trim() : "Param sourceImagePath should be defined."
-    assert input.toImagePath?.trim() : "Param toImagePath should be defined."
+    assert input.sourceImageTag?.trim() : "Param sourceImageTag should be defined."
+    assert input.toImageName?.trim() : "Param toImageName should be defined."
+    assert input.toImageTag?.trim() : "Param toImageTag should be defined."
 
-    openshift.withCluster() {
-        openshift.tag("${input.sourceImagePath}/${input.sourceImageName}:${input.sourceImageTag}", 
-                      "${input.toImagePath}/${input.toImageName}:${input.toImageTag}")
+    openshift.withCluster(input.clusterUrl, input.clusterToken) {
+        openshift.withProject(input.projectName) {
+            def source = input.sourceImagePath?.trim() ? "${input.sourceImagePath}/${input.sourceImageName}:${input.sourceImageTag}" : "${input.sourceImageName}:${input.sourceImageTag}"
+            def destination = input.toImagePath?.trim() ? "${input.toImagePath}/${input.toImageName}:${input.toImageTag}" : "${input.toImageName}:${input.toImageTag}"
+
+            openshift.tag(source, destination)
+        }
     }
 }

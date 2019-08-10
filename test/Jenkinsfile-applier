@@ -1,0 +1,23 @@
+#!groovy
+@Library(["pipeline-library@jenkinsfile-tests"]) _
+
+
+node("jenkins-slave-ansible") {
+    stage("SETUP: Clone containers-quickstarts") {
+        sh "git clone https://github.com/redhat-cop/containers-quickstarts.git"
+    }
+
+    stage("TEST: Run applier for 'build-s2i-executable'") {
+        applier([
+                inventoryPath         : ".applier/hosts",
+                requirementsPath      : "requirements.yml",
+                ansibleRootDir        : "${WORKSPACE}/containers-quickstarts/build-s2i-executable",
+                applierPlaybook       : "galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml",
+                playbookAdditionalArgs: "--tags build"
+        ])
+    }
+
+    stage("ASSERT") {
+        echo "DONE"
+    }
+}

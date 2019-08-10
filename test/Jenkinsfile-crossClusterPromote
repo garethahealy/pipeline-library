@@ -1,0 +1,35 @@
+#!groovy
+@Library(["pipeline-library@jenkinsfile-tests"]) _
+
+node("jenkins-slave-image-mgmt") {
+    stage("SETUP: Check imagestream doesnt exist") {
+        openshift.withCluster() {
+            openshift.withProject("pipelinelib-promotion-testing") {
+                def imageStream = openshift.selector("is", "jenkins-slave-ansible")
+                if (imageStream.exists()) {
+                    imageStream.delete()
+                }
+            }
+        }
+
+        openshift.logLevel(10)
+    }
+
+    stage("TEST: Can promote image from one project to another") {
+        crossClusterPromote([
+                sourceImageName          : "jenkins-slave-ansible",
+                sourceImagePath          : "pipelinelib-testing",
+                destinationImagePath     : "pipelinelib-promotion-testing",
+                targetRegistryCredentials: "local-registry-generic"
+        ])
+    }
+
+    stage("ASSERT") {
+        openshift.withCluster() {
+            openshift.withProject("pipelinelib-promotion-testing") {
+                def imageStream = openshift.selector("is", "jenkins-slave-ansible")
+                assert imageStream.exists()
+            }
+        }
+    }
+}

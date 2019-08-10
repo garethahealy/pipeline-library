@@ -1,0 +1,44 @@
+#!groovy
+@Library(["pipeline-library@jenkinsfile-tests"]) _
+
+node("maven") {
+    stage("SETUP: Create build files") {
+        openshift.withCluster() {
+            openshift.withProject() {
+                def buildConfig = openshift.selector("bc", "sample-build-binary")
+                if (!buildConfig.exists()) {
+                    openshift.apply("-f", "https://raw.githubusercontent.com/openshift/origin/v3.11.0/test/extended/testdata/builds/test-build.yaml")
+                }
+            }
+        }
+
+        dir("build") {
+            dockerfile = """
+                    FROM scratch
+                    COPY README.md /
+                    """
+
+            writeFile file: "README.md", text: "Test file"
+            writeFile file: "Dockerfile", text: dockerfile
+        }
+
+        openshift.logLevel(10)
+    }
+
+    stage("TEST: Can build using from-file") {
+        binaryBuild([
+                buildConfigName: "sample-build-binary",
+                buildFromFlag  : "--from-dir",
+                buildFromPath  : "${WORKSPACE}/build/"
+        ])
+    }
+
+    stage("ASSERT") {
+        openshift.withCluster() {
+            openshift.withProject() {
+                def build = openshift.selector("build", "sample-build-binary-${env.BUILD_NUMBER}")
+                assert build.exists()
+            }
+        }
+    }
+}

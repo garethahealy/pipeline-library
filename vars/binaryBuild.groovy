@@ -14,7 +14,6 @@ def call(Map input) {
 }
 
 def call(BinaryBuildInput input) {
-    assert input.projectName?.trim()     : "Param projectName should be defined."
     assert input.buildConfigName?.trim() : "Param buildConfigName should be defined."
     assert input.buildFromFlag?.trim()   : "Param buildFromFlag should be defined."
     assert input.buildFromPath?.trim()   : "Param buildFromPath should be defined."
@@ -22,9 +21,18 @@ def call(BinaryBuildInput input) {
     openshift.withCluster(input.clusterAPI, input.clusterToken) {
         openshift.withProject(input.projectName) {
             echo "Start & Follow Build"
+
             def buildConfig = openshift.selector('bc', input.buildConfigName)
-            def build       = buildConfig.startBuild("${input.buildFromFlag}=${input.buildFromPath}", '--wait')
-            build.logs('-f')
+            if (buildConfig.exists()) {
+                def build
+                try {
+                    build = buildConfig.startBuild("${input.buildFromFlag}=${input.buildFromPath}")
+                } finally {
+                    build.logs('-f')
+                }
+            } else {
+                error "Failed to find 'bc/${input.buildConfigName}' in ${openshift.project()}"
+            }
         }
     }
 }
