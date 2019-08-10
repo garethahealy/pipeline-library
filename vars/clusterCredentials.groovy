@@ -10,22 +10,25 @@ def call(Map input) {
 }
 
 def call(ClusterCredentialsInput input) {
-    assert input.projectName?.trim() : "Param projectName should be defined."
     assert input.secretName?.trim()  : "Param secretName should be defined."
-
-    echo "Get Cluster Credentials: ${input.projectName}/${input.secretName}"
 
     def encodedApi
     def encodedToken
 
     openshift.withCluster() {
         openshift.withProject(input.projectName) {
-            def secret = openshift.selector("secret/${input.secretName}")
-            def secretObject = secret.object()
-            def secretData = secretObject.data
+            echo "Get Cluster Credentials: ${openshift.project()}/${input.secretName}"
 
-            encodedApi = secretData.api
-            encodedToken = secretData.token
+            def secret = openshift.selector("secret/${input.secretName}")
+            if (secret.exists()) {
+                def secretObject = secret.object()
+                def secretData = secretObject.data
+
+                encodedApi = secretData.api
+                encodedToken = secretData.token
+            } else {
+                error "Failed to find 'secret/${input.secretName}' in ${openshift.project()}"
+            }
         }
     }
      

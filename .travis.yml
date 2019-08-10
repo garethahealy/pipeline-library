@@ -7,6 +7,10 @@ install:
   - mvn -N io.takari:maven:wrapper -Dmaven=3.6.0
   - java -version && javac -version && ./mvnw -version -B
 
+before_script:
+  - find vars -type f -name "*.groovy" -exec bash -c '[ -f test/Jenkinsfile-$(basename {} .groovy) ] || echo "Missing test: - test/Jenkinsfile-$(basename {} .groovy)"' \;
+  - find vars -type f -name "*.groovy" -exec bash -c '[ -f test/Jenkinsfile-$(basename {} .groovy) ] || exit 1 \;
+
 script:
   - ./mvnw clean install -B
 
