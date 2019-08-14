@@ -3,6 +3,8 @@
 
 def dockerRegistry
 
+def dockerRegistry
+
 podTemplate(label: "jnlp", cloud: "openshift", inheritFrom: "jenkins-slave-image-mgmt", volumes: [
         secretVolume(mountPath: "/var/run/secrets/kubernetes.io/dockerconfigjson", secretName: "local-registry")
 ]) {

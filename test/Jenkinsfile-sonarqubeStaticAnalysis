@@ -46,7 +46,8 @@ node("jenkins-slave-ansible") {
                         try {
                             sonarDeployment.rollout().status("--watch=true")
                         } catch(ex) {
-                            sonarDeployment.rollout().latest()
+                            sonarDeployment.rollout().cancel()
+                            sonarDeployment.rollout().retry()
 
                             error "Ignoring rollout error: ${ex}"
                         }
