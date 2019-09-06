@@ -3,8 +3,11 @@
 class Rollback implements Serializable {
     String deploymentConfig
     String rollbackVersion = ""
+
+	//Optional - Platform
     String clusterUrl = ""
     String clusterToken = ""
+	String projectName = ""
 }
 
 def call(Map input) {
@@ -21,7 +24,9 @@ def call(Rollback input) {
 	}
 
 	openshift.withCluster(input.clusterUrl, input.clusterToken) {
-		openshift.selector(input.deploymentConfig).rollout().undo(rollbackToRevision)
+		openshift.withProject(input.projectName) {
+			openshift.selector(input.deploymentConfig).rollout().undo(rollbackToRevision)
+		}
 	}
 
 	println "Finished rollback."
