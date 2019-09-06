@@ -1,5 +1,5 @@
 #!groovy
-@Library(["pipeline-library@master"]) _
+@Library(["pipeline-library@rollout-project"]) _
 
 def firstDeploymentVersion
 
