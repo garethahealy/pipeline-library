@@ -33,11 +33,16 @@ def call(ApplierInput input) {
     // which can be a slow operation but also preserves backward compatibility in this function
     if(!input.secretName.allWhitespace) {
         openshift.withCluster() {
-            def secretData   = openshift.selector("secret/${input.secretName}").object().data
-            def encodedToken = secretData.token
+            def secret = openshift.selector("secret", input.secretName)
+            if (secret.exists()) {
+                def secretData   = secret.object().data
+                def encodedToken = secretData.token
 
-            clusterToken = sh(script:"set +x; echo ${encodedToken} | base64 --decode", returnStdout: true)
-            clusterAPI   = input.clusterAPI
+                clusterToken = sh(script:"set +x; echo ${encodedToken} | base64 --decode", returnStdout: true)
+                clusterAPI   = input.clusterAPI
+            } else {
+                error "Failed to find 'secret/${input.secretName}' in ${openshift.project()}"
+            }
         }
     } else {
         clusterAPI   = input.clusterAPI

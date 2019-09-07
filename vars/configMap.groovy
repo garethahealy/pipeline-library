@@ -23,8 +23,12 @@ def call(ConfigMapInput input) {
             echo "Read ConfigMap: ${openshift.project()}/${input.configMapName}"
 
             def configMap = openshift.selector("configmap/${input.configMapName}")
-            def configMapObject = configMap.object()
-            configMapData = configMapObject.data
+            if (configMap.exists()) {
+                def configMapObject = configMap.object()
+                configMapData = configMapObject.data
+            } else {
+                error "Failed to find 'configmap/${input.configMapName}' in ${openshift.project()}"
+            }
         }
     }
      

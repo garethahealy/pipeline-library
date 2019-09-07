@@ -24,11 +24,15 @@ def call(ClusterCredentialsInput input) {
     openshift.withCluster(input.clusterAPI, input.clusterToken) {
         openshift.withProject(input.projectName) {
             def secret = openshift.selector("secret/${input.secretName}")
-            def secretObject = secret.object()
-            def secretData = secretObject.data
+            if (secret.exists()) {
+                def secretObject = secret.object()
+                def secretData = secretObject.data
 
-            encodedApi = secretData.api
-            encodedToken = secretData.token
+                encodedApi = secretData.api
+                encodedToken = secretData.token
+            } else {
+                error "Failed to find 'secret/${input.secretName}' in ${openshift.project()}"
+            }
         }
     }
      

@@ -1,0 +1,12 @@
+#!groovy
+@Library(["pipeline-library@master"]) _
+
+def configMapData
+
+node("maven") {
+    stage("TEST: Can get configmap data and fail") {
+        configMapData = configMap([
+                configMapName: "doesnt-exist"
+        ])
+    }
+}

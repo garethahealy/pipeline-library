@@ -25,7 +25,12 @@ def call(Rollback input) {
 
 	openshift.withCluster(input.clusterUrl, input.clusterToken) {
 		openshift.withProject(input.projectName) {
-			openshift.selector(input.deploymentConfig).rollout().undo(rollbackToRevision)
+			def deployment = openshift.selector(input.deploymentConfig)
+			if (deployment.exists()) {
+				deployment.rollout().undo(rollbackToRevision)
+			} else {
+				error "Failed to find '${input.deploymentConfig}' in ${openshift.project()}"
+			}
 		}
 	}
 

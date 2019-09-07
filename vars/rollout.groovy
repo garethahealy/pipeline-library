@@ -20,13 +20,17 @@ def call(RolloutInput input) {
         openshift.withProject(input.projectName) {
             echo "Get the Rollout Manager: ${input.deploymentConfigName}"
             def deploymentConfig = openshift.selector('dc', input.deploymentConfigName)
-            def rolloutManager   = deploymentConfig.rollout()
+            if (deploymentConfig.exists()) {
+                def rolloutManager = deploymentConfig.rollout()
 
-            echo "Deploy: ${input.deploymentConfigName}"
-            rolloutManager.latest()
-    
-            echo "Wait for Deployment: ${input.deploymentConfigName}"
-            rolloutManager.status("-w")
+                echo "Deploy: ${input.deploymentConfigName}"
+                rolloutManager.latest()
+
+                echo "Wait for Deployment: ${input.deploymentConfigName}"
+                rolloutManager.status("-w")
+            } else {
+                error "Failed to find 'dc/${input.deploymentConfigName}' in ${openshift.project()}"
+            }
         }
     }
 }

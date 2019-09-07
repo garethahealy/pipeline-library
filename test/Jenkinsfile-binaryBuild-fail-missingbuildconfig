@@ -1,0 +1,14 @@
+#!groovy
+@Library(["pipeline-library@master"]) _
+
+def firstBuildVersion
+
+node("maven") {
+    stage("TEST: Can build using from-file and fail") {
+        binaryBuild([
+                buildConfigName: "doesnt-exist",
+                buildFromFlag  : "--from-dir",
+                buildFromPath  : "${WORKSPACE}/build/"
+        ])
+    }
+}
