@@ -1,7 +1,13 @@
 # applyTemplate
-
+## Whats it do?
 This function processes template file with parameters file and then runs "oc apply" for the processing results.
 Also it has a workaround for the bug that if the DeploymentConfig already exists, it will break the Image Trigger.
+
+## What parameters are supported?
+
+## How do I use it against a local cluster?
+
+## How do I use it against a remote cluster?
 
 Sample usage:
 
