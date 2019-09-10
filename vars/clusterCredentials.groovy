@@ -31,6 +31,10 @@ def call(ClusterCredentialsInput input) {
             encodedToken = secretData.token
         }
     }
+
+    wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[password: '123ADS', var: 'SECRET']]]) {
+        echo env['SECRET'];
+    }
      
     //NOTE: the regex here makes it so that the jenkins-client-plugin wont verify the CA
     def api      = sh(script:"set +x; echo ${encodedApi}      | base64 --decode", returnStdout: true).replaceAll(/https?/, 'insecure')
