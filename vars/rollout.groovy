@@ -4,6 +4,9 @@ class RolloutInput implements Serializable {
     //Required
     String deploymentConfigName = ""
 
+    //Optional
+    boolean latest = true
+
     //Optional - Platform
     String clusterAPI           = ""
     String clusterToken         = ""
@@ -24,7 +27,9 @@ def call(RolloutInput input) {
             def deploymentConfig = openshift.selector('dc', input.deploymentConfigName)
             def rolloutManager   = deploymentConfig.rollout()
 
-            rolloutManager.latest()
+            if (input.latest) {
+                rolloutManager.latest()
+            }
 
             echo "Waiting for rollout of 'deploymentconfig/${input.deploymentConfigName}' in ${openshift.project()} to complete..."
 
